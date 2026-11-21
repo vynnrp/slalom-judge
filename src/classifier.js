@@ -118,7 +118,10 @@ export class TrickRecognizer {
       this.current = null;
       this.window = [];
     }
-    const m = matchFrame(feats, this.config, this.byId);
+    let m = matchFrame(feats, this.config, this.byId);
+    // A spin stays one trick while the body keeps turning: crossed legs or a low free leg in the middle
+    // of a spin must not switch to another family (e.g. Butterfly). Switching to another spin is allowed.
+    if (this.current && feats.spinning_now && this._isSpin(this.current.match) && !this._isSpin(m)) m = this.current.match;
     const counters = feats.counters || {};
     this.window.push({ t, key: keyOf(m), match: m, counters });
     while (this.window.length && t - this.window[0].t > s.windowMs) this.window.shift();
@@ -131,7 +134,13 @@ export class TrickRecognizer {
     const stable = this.window.length >= 4 && topN / this.window.length >= s.matchRatio ? topKey : null;
 
     let event = null;
-    if (stable && (!this.current || this.current.key !== stable)) {
+    const stableMatch = stable && stable !== 'none' ? this.window.find((w) => w.key === stable).match : null;
+    if (stable && this.current && this.current.key !== stable && feats.spinning_now
+      && this._isSpin(this.current.match) && this._isSpin(stableMatch)) {
+      // Same spin, now recognised as a more specific spin trick: relabel it, keep its start and counts.
+      this.current.key = stable; this.current.match = stableMatch;
+      this.current.last = t; this.current.lastCounters = counters;
+    } else if (stable && (!this.current || this.current.key !== stable)) {
       event = this._close(t);
       if (stable !== 'none') {
         // The trick really started at the first frame in the window that matched it.
@@ -146,6 +155,13 @@ export class TrickRecognizer {
     }
 
     return { frameMatch: m, current: this.current, event: event || gapEvent };
+  }
+
+  _isSpin(m) {
+    if (!m || m.kind === 'none') return false;
+    if (m.kind === 'family') return m.id === 'spinning';
+    const def = this.config.tricks[m.id] || {};
+    return !!def.spin || this.byId[m.id]?.family === 'spinning' || /turns/.test(def.count || '');
   }
 
   finish(t) {

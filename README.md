@@ -92,6 +92,16 @@ From Chawis's second clip (2026-11-21). The recogniser now logs **Butterfly (B6,
 * Also new: a lost skater (no pose) ends the current trick, a trick needs a few frames before it shows, and a long "jump"
   (over 0.6 s) is treated as camera movement, not a jump.
 
+## Spins stay one trick (fix from Chawis, 2026-11-21)
+
+A Toe Reverse Spin on the phone was split by a "Butterfly" in the middle. Now:
+
+* While the body keeps turning (`spinning_now`), a spin cannot switch to a non-spin trick, so crossed legs mid-spin
+  no longer read as Butterfly. It can still be relabelled as a more specific spin, keeping its start and its cone count.
+* Butterfly needs the free leg down (`free_foot_lift` ≤ 0.12) and no spin.
+* A sudden half turn between two frames is treated as the pose model swapping front and back, not as real rotation.
+* Tests now replay both clips at 30, 15 and 10 fps (phone-like frame rates).
+
 ## Guesses and known limits
 
 * **All thresholds are first guesses** and were only checked against hand-built skeletons (`test/`) and one still photo,

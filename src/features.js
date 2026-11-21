@@ -25,6 +25,7 @@ export const FEATURE_INFO = {
   support_toe_rise: { unit: 'shin', desc: 'Image based: how much higher the supporting heel is than its toe, in shin lengths. ~0–0.12 flat, > 0.15 on the toe wheels (heel lifted), < −0.1 on the heel wheel. Tuned on the Toe Reverse Spin clip.' },
   on_toe: { unit: '', desc: '1 while the supporting skate is on its toe (support_toe_rise above the "toe" setting, smoothed), else 0.' },
   spin_dir: { unit: '', desc: '+1 / −1 rotation direction relative to the supporting foot (+1 = turning towards the supporting-foot side). 0 when not spinning. GUESS which sign is "reverse".' },
+  spinning_now: { unit: '', desc: '1 while the body is still turning in a spin that has done at least a quarter turn (stays 1 through short slow moments), else 0.' },
   toe_turns: { unit: 'turns', desc: 'Turns completed while on the toe in the current spin.' },
   min_toe_rise: { unit: 'shin', desc: 'Image based: toe rise of the LOWER of the two skates (both on the toe when high). Median over 0.5 s.' },
   free_foot_lift_max: { unit: 'leg', desc: 'High value (80th percentile) of free_foot_lift in the last 0.8 s. Separates tricks that keep both feet down (Butterfly) from ones that lift a foot (TT Special).' },
@@ -186,7 +187,13 @@ export class FeatureTracker {
     const on_toe = this.toeHist.reduce((a, b) => a + b, 0) * 2 > this.toeHist.length ? 1 : 0;
 
     // ---- yaw unwrap ----
-    if (this.lastYaw != null) this.unwrapped += wrap180(f._yaw - this.lastYaw);
+    if (this.lastYaw != null) {
+      let d = wrap180(f._yaw - this.lastYaw);
+      // The pose model sometimes swaps front and back (e.g. when the legs cross), which looks like a sudden
+      // half turn. No skater turns >100° between two frames, so treat that as a flip and keep only the remainder.
+      if (Math.abs(d) > 100) d -= 180 * Math.sign(d);
+      this.unwrapped += d;
+    }
     this.lastYaw = f._yaw;
 
     this.hist.push({ t, lowAnkleY, legImg, hipX, yaw: this.unwrapped });
@@ -280,7 +287,7 @@ export class FeatureTracker {
     const min_toe_rise = rs[Math.floor(rs.length / 2)];
 
     const out = { ...f, free_foot_lift_max, ankle_order_range, min_toe_rise, air_gap, spin_rate, rotations: this.spinAccum / 360, travel_dir, speed,
-      support_toe_rise, on_toe, spin_dir, toe_turns: this.toeAccum / 360, cone_dx, counters: { ...this.counters } };
+      support_toe_rise, on_toe, spin_dir, spinning_now: this.spinAccum >= 90 ? 1 : 0, toe_turns: this.toeAccum / 360, cone_dx, counters: { ...this.counters } };
     delete out._yaw;
     delete out._supportLeft;
     delete out._facingX;

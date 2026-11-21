@@ -187,13 +187,13 @@ check('same but travelling backwards is Back Wheeling', () => {
 });
 
 // ---- Real clip: Toe Reverse Spin (pose landmarks + detected cones dumped with tools/dump.html) ----
-function runFixture(file) {
+function runFixture(file, step = 1, offset = 0) {
   const cfg = structuredClone(DEFAULT_CONFIG);
   const frames = JSON.parse(fs.readFileSync(new URL(`./fixtures/${file}`, import.meta.url)));
   const ft = new FeatureTracker({ toeRiseMin: cfg.settings.toeRiseMin, coneBand: cfg.settings.coneBand });
   const rec = new TrickRecognizer(cfg);
   let last = 0;
-  for (const fr of frames) { if (!fr.image) continue; rec.update(fr.t, ft.update(fr)); last = fr.t; }
+  frames.forEach((fr, i) => { if (!fr.image || (i + offset) % step) return; rec.update(fr.t, ft.update(fr)); last = fr.t; });
   rec.finish(last);
   return rec.log;
 }
@@ -214,6 +214,21 @@ check('clip: Butterfly -> TT Special ("Toe Special") -> Toe Teapot, in order', (
   const log = runFixture('butterfly-tt-special-toe-teapot.pose.json').filter((e) => e.kind === 'trick');
   assert.deepEqual(log.map((e) => e.label), ['Butterfly', 'TT Special', 'Toe Teapot'], JSON.stringify(log.map((e) => [e.label, e.start])));
   assert.ok(log.every((e) => e.valid));
+});
+
+check('clip: a Toe Reverse Spin stays ONE trick at phone frame rates (no Butterfly from crossed legs)', () => {
+  for (const [step, off] of [[1, 0], [2, 0], [2, 1], [3, 0], [3, 1], [3, 2]]) {
+    const log = runFixture('toe-reverse-spin.pose.json', step, off);
+    assert.deepEqual(log.map((e) => e.label), ['Toe Reverse Spin'], `${30 / step} fps: ${JSON.stringify(log.map((e) => e.label))}`);
+    assert.ok(log[0].count >= 3, `${30 / step} fps: ${log[0].count} cones`);
+  }
+});
+
+check('clip: combo is recognised at phone frame rates too', () => {
+  for (const [step, off] of [[2, 0], [2, 1], [3, 0], [3, 2]]) {
+    const log = runFixture('butterfly-tt-special-toe-teapot.pose.json', step, off).filter((e) => e.kind === 'trick');
+    assert.deepEqual(log.map((e) => e.label), ['Butterfly', 'TT Special', 'Toe Teapot'], `${30 / step} fps`);
+  }
 });
 
 console.log(failures ? `\n${failures} failing` : '\nall passed');

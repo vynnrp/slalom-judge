@@ -91,8 +91,8 @@ export const DEFAULT_CONFIG = {
     // ---- Others ----
     'others.butterfly': {
       rules: [{ f: 'sit_depth', min: 0.8 }, { f: 'free_foot_lift_max', max: 0.17 }, { f: 'ankle_order_range', min: 1.2 },
-        { f: 'min_toe_rise', min: 0.12 }, { f: 'torso_lean', max: 25 }],
-      note: 'From the combo clip (1.4–2.8 s): standing on both toes, legs crossing and uncrossing, both skates stay down.',
+        { f: 'min_toe_rise', min: 0.12 }, { f: 'torso_lean', max: 25 }, { f: 'free_foot_lift', max: 0.12 }, ...noSpin],
+      note: 'From the combo clip (1.4–2.8 s): standing on both toes, legs crossing and uncrossing, both skates stay down. Chawis: no Butterfly unless the free leg comes down, and not during a spin.',
     },
     'others.tt-special': {
       rules: [{ f: 'sit_depth', min: 0.8 }, { f: 'free_foot_lift_max', min: 0.25 }, { f: 'ankle_order_range', min: 1.5 },
