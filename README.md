@@ -55,15 +55,15 @@ Footgun C2 = 32, Nelson E0 = 10.
 
 ## What is detected in this version
 
-25 tricks have starting rules (24 from the matrix plus Toe Reverse Spin); the other 75 are listed and scored but are not detected yet (they fall back to their family).
+28 tricks have starting rules (26 from the matrix plus Toe Reverse Spin and Toe Teapot); the other 73 are listed and scored but are not detected yet (they fall back to their family).
 
 | Family | Tricks with rules |
 |---|---|
-| Sitting | Footgun, Back Footgun, Toe Footgun, Back Toe Footgun, Toe Footgun Spin, Christie, Back Christie, Toe Christie, Back Toe Christie, Toe Christie Spin, Small Cart |
+| Sitting | Toe Teapot (custom), Footgun, Back Footgun, Toe Footgun, Back Toe Footgun, Toe Footgun Spin, Christie, Back Christie, Toe Christie, Back Toe Christie, Toe Christie Spin, Small Cart |
 | Jumping | X Jump |
 | Wheeling | Fwd Wheeling, Back Wheeling, One Foot, Back One Foot, Two Wheels Cross, Two Wheels Back Cross, Snake/Cross, Back Snake/Back Cross |
 | Spinning | Two Feet Spin, Two Wheels Spin, Toe Reverse Spin (custom) |
-| Others | Eagle / Eagle Cross, Two Wheels Eagle |
+| Others | Butterfly, TT Special, Eagle / Eagle Cross, Two Wheels Eagle |
 
 ## Toe Reverse Spin and cone counting
 
@@ -80,6 +80,17 @@ Added from Chawis's clip and rule (2026-11-21): **count only while on the toe, a
 * Toe Reverse Spin is not in the matrix, so it is a **custom trick** at level **C3 (33 pts) as a guess**, the same as
   Two Wheels Spin. Change it in the trick editor. "+ New trick" adds other tricks that are not in the matrix.
 * "Reverse" is read as `spin_dir = +1` (turning towards the supporting-foot side), taken from the clip. GUESS.
+
+## Combo clip: Butterfly, Toe Special, Toe Teapot
+
+From Chawis's second clip (2026-11-21). The recogniser now logs **Butterfly (B6, 46) → TT Special (D9, 29) → Toe Teapot (A4, 54)** in order.
+
+* **Butterfly**: standing on both toes, legs crossing and uncrossing (`ankle_order_range` ≥ 1.2), both skates stay down (`free_foot_lift_max` ≤ 0.17).
+* **Toe Special** is read as the matrix's **TT Special** (toe-toe special): the same crossing, but one skate is lifted in turn (`free_foot_lift_max` ≥ 0.25).
+* **Toe Teapot**: crouched on both toes (knees under 135°, torso leaning forward, `min_toe_rise` ≥ 0.18). It is not in the
+  matrix, so it is a custom trick at **A4 (54) as a guess**: one level above Teapot (B4), the way Toe Footgun is one level above Footgun.
+* Also new: a lost skater (no pose) ends the current trick, a trick needs a few frames before it shows, and a long "jump"
+  (over 0.6 s) is treated as camera movement, not a jump.
 
 ## Guesses and known limits
 
@@ -113,7 +124,7 @@ src/default-config.js    default rules for each trick (the part to tune)
 src/tricks-matrix.js     Appendix A matrix: 99 tricks, levels, points
 vendor/tasks-vision/     MediaPipe Tasks Vision 0.10.14 (Apache 2.0)
 models/                  pose_landmarker_full.task
-test/                    synthetic pose tests + the Toe Reverse Spin clip (as landmarks)
+test/                    synthetic pose tests + Chawis's two clips (as landmarks)
 tools/dump.html          dev tool: dump landmarks and cones from a video for tuning/tests
 sw.js, manifest          installable, offline app
 launcher/, Start ...     double-click launchers

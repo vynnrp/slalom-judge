@@ -38,6 +38,8 @@ export const DEFAULT_CONFIG = {
   // Tricks that are not in the matrix. Level is placed by technical similarity (matrix footnote).
   customTricks: [
     { id: 'spinning.toe-reverse-spin', name: 'Toe Reverse Spin', family: 'spinning', level: 'C', sub: 3 },
+    // GUESS: one level above Teapot (B4), like Toe Footgun (B2) is one level above Footgun (C2).
+    { id: 'sitting.toe-teapot', name: 'Toe Teapot', family: 'sitting', level: 'A', sub: 4 },
   ],
   // Family detectors: used when no specific trick matches.
   families: {
@@ -79,7 +81,23 @@ export const DEFAULT_CONFIG = {
       count: 'toe_cones', minCount: 3,
       note: 'Rule from Chawis (2026-11-21): count only while on the toe, and only when passing the middle of a cone. Level C3 is a GUESS (same as Two Wheels Spin). spin_dir +1 taken from the sample clip (right foot).',
     },
+    // ---- Combo clip from Chawis (2026-11-21): Butterfly -> Toe Special (TT Special) -> Toe Teapot ----
+    'sitting.toe-teapot': {
+      rules: [{ f: 'support_knee_angle', max: 135 }, { f: 'free_knee_angle', max: 135 }, { f: 'torso_lean', min: 18 },
+        { f: 'min_toe_rise', min: 0.18 }, { f: 'free_foot_lift', max: 0.1 }, ...noSpin],
+      note: 'From the combo clip (6.0–7.9 s): crouched on both toes, knees 70–135°, torso leaning 20–35°, both skates down. Level A4 is a GUESS.',
+    },
     // ---- Others ----
+    'others.butterfly': {
+      rules: [{ f: 'sit_depth', min: 0.8 }, { f: 'free_foot_lift_max', max: 0.17 }, { f: 'ankle_order_range', min: 1.2 },
+        { f: 'min_toe_rise', min: 0.12 }, { f: 'torso_lean', max: 25 }],
+      note: 'From the combo clip (1.4–2.8 s): standing on both toes, legs crossing and uncrossing, both skates stay down.',
+    },
+    'others.tt-special': {
+      rules: [{ f: 'sit_depth', min: 0.8 }, { f: 'free_foot_lift_max', min: 0.25 }, { f: 'ankle_order_range', min: 1.5 },
+        { f: 'support_knee_angle', min: 120 }, { f: 'torso_lean', max: 25 }, ...noSpin],
+      note: '"Toe Special" in the combo clip (2.9–5.9 s): on the toes, legs crossing, one skate lifted in turn.',
+    },
     'others.eagle-eagle-cross': { rules: [{ f: 'foot_turnout', min: 140 }, ...bothDown, { f: 'min_abs_foot_pitch', max: 15 }, ...noSpin] },
     'others.two-wheels-eagle': { rules: [{ f: 'foot_turnout', min: 140 }, ...bothDown, ...tilted(15), ...noSpin] },
   },

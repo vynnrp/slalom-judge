@@ -26,6 +26,9 @@ export const FEATURE_INFO = {
   on_toe: { unit: '', desc: '1 while the supporting skate is on its toe (support_toe_rise above the "toe" setting, smoothed), else 0.' },
   spin_dir: { unit: '', desc: '+1 / −1 rotation direction relative to the supporting foot (+1 = turning towards the supporting-foot side). 0 when not spinning. GUESS which sign is "reverse".' },
   toe_turns: { unit: 'turns', desc: 'Turns completed while on the toe in the current spin.' },
+  min_toe_rise: { unit: 'shin', desc: 'Image based: toe rise of the LOWER of the two skates (both on the toe when high). Median over 0.5 s.' },
+  free_foot_lift_max: { unit: 'leg', desc: 'High value (80th percentile) of free_foot_lift in the last 0.8 s. Separates tricks that keep both feet down (Butterfly) from ones that lift a foot (TT Special).' },
+  ankle_order_range: { unit: 'hip', desc: 'Range of ankle_order over the last 1 s. Large = legs crossing and uncrossing (Butterfly, Special, Crazy).' },
   min_abs_foot_pitch: { unit: '°', desc: 'Smaller absolute pitch of the two skates. High = both skates tilted (two-wheel tricks).' },
   ankle_order: { unit: 'hip', desc: 'Left ankle position relative to right ankle along the hip axis, in hip widths. Negative = legs crossed.' },
   stance_width: { unit: 'hip', desc: 'Horizontal distance between the ankles, in hip widths.' },
@@ -130,7 +133,7 @@ export function staticFeatures(w) {
 export class FeatureTracker {
   constructor(opts = {}) {
     this.opts = {
-      groundWindowMs: 1500, // window for the ground line estimate
+      groundWindowMs: 700, // short, so a zooming/tilting camera is not mistaken for a jump // window for the ground line estimate
       spinWindowMs: 600, // smoothing window for spin rate
       spinStopRate: 120, // °/s below which a spin is considered finished
       spinStopMs: 350,
@@ -138,6 +141,8 @@ export class FeatureTracker {
       toeRiseMin: 0.15, // support_toe_rise above this = on toe
       toeSmoothFrames: 5, // majority over this many frames
       coneBand: 0.35, // cones whose base is within this many leg lengths (image) of the foot count as "on the line"
+      statWindowMs: 1000,
+      maxAirMs: 600,
       ...opts,
     };
     this.reset();
@@ -150,6 +155,8 @@ export class FeatureTracker {
     this.spinAccum = 0;
     this.slowSince = null;
     this.toeHist = [];
+    this.statHist = [];
+    this.lastGroundedT = null; // {t, lift, order, minRise}
     this.toeAccum = 0;
     this.spinSigned = 0;
     this.lastConeDx = null;
@@ -188,7 +195,11 @@ export class FeatureTracker {
 
     // Ground line = lowest foot point seen recently (largest y). Air gap = how far the lowest foot is above it.
     const ground = Math.max(...this.hist.filter((h) => t - h.t <= o.groundWindowMs).map((h) => h.lowAnkleY));
-    const air_gap = (ground - lowAnkleY) / legImg;
+    let air_gap = (ground - lowAnkleY) / legImg;
+    // A skater can't stay in the air for long: if the feet look "up" for more than maxAirMs,
+    // it is the camera tilting/zooming, not a jump.
+    if (air_gap < 0.03 || this.lastGroundedT == null) this.lastGroundedT = t;
+    if (t - this.lastGroundedT > o.maxAirMs) air_gap = 0;
 
     // Spin rate over a short window
     const sw = this.hist.filter((h) => t - h.t <= o.spinWindowMs);
@@ -255,7 +266,20 @@ export class FeatureTracker {
     let travel_dir = 0;
     if (speed > 0.3 && Math.abs(f._facingX) > 0.3) travel_dir = Math.sign(vx) === Math.sign(f._facingX) ? 1 : -1;
 
-    const out = { ...f, air_gap, spin_rate, rotations: this.spinAccum / 360, travel_dir, speed,
+    // ---- windowed stats ----
+    const riseOf = (k, a, h, tt) => (n[tt].y - n[h].y) / (len(sub(n[k], n[a])) || 1e-6);
+    const minRise = Math.min(riseOf(LM.lKnee, LM.lAnkle, LM.lHeel, LM.lToe), riseOf(LM.rKnee, LM.rAnkle, LM.rHeel, LM.rToe));
+    this.statHist.push({ t, lift: f.free_foot_lift, order: f.ankle_order, minRise });
+    while (this.statHist.length && t - this.statHist[0].t > o.statWindowMs) this.statHist.shift();
+    const inLast = (ms) => this.statHist.filter((h) => t - h.t <= ms);
+    const lifts = inLast(800).map((h) => h.lift).sort((a, b) => a - b);
+    const free_foot_lift_max = lifts[Math.floor(lifts.length * 0.8)] ?? lifts[lifts.length - 1]; // 80th percentile: ignores one-frame glitches
+    const orders = this.statHist.map((h) => h.order);
+    const ankle_order_range = Math.max(...orders) - Math.min(...orders);
+    const rs = inLast(500).map((h) => h.minRise).sort((a, b) => a - b);
+    const min_toe_rise = rs[Math.floor(rs.length / 2)];
+
+    const out = { ...f, free_foot_lift_max, ankle_order_range, min_toe_rise, air_gap, spin_rate, rotations: this.spinAccum / 360, travel_dir, speed,
       support_toe_rise, on_toe, spin_dir, toe_turns: this.toeAccum / 360, cone_dx, counters: { ...this.counters } };
     delete out._yaw;
     delete out._supportLeft;

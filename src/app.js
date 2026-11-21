@@ -55,6 +55,7 @@ const TRICKS_BY_ID = () => recognizer.byId;
 const describe = (m) => recognizer.describe(m);
 let landmarker = null, drawer = null;
 let lastFeats = null, lastDetectTs = 0, lastVideoT = -1, running = false, source = null;
+const trace = []; // per-frame debug trace, read via window.slalomJudge.trace
 let selected = null; // { kind: 'trick'|'family', id }
 
 async function initModel() {
@@ -141,6 +142,7 @@ function processFrame() {
   const feats = tracker.update({ t: vt, image: img, world, cones });
   lastFeats = feats;
   const { frameMatch, current, event } = recognizer.update(vt, feats);
+  if (trace.length < 20000) trace.push({ t: vt, label: describe(frameMatch).label, f: feats });
   showFrame(frameMatch, current, vt);
   if (event) renderLog();
   if (!$('tab-features').classList.contains('hidden')) renderFeatures();
@@ -429,4 +431,4 @@ if ('serviceWorker' in navigator && location.protocol !== 'file:') {
 }
 
 // Exposed for debugging / automated checks
-window.slalomJudge = { get config() { return config; }, recognizer, tracker };
+window.slalomJudge = { get config() { return config; }, recognizer, tracker, trace };

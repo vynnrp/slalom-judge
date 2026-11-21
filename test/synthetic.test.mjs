@@ -210,5 +210,11 @@ check('clip: Toe Reverse Spin recognised, counting only cones passed on the toe'
   assert.ok(e.valid, JSON.stringify(e));
 });
 
+check('clip: Butterfly -> TT Special ("Toe Special") -> Toe Teapot, in order', () => {
+  const log = runFixture('butterfly-tt-special-toe-teapot.pose.json').filter((e) => e.kind === 'trick');
+  assert.deepEqual(log.map((e) => e.label), ['Butterfly', 'TT Special', 'Toe Teapot'], JSON.stringify(log.map((e) => [e.label, e.start])));
+  assert.ok(log.every((e) => e.valid));
+});
+
 console.log(failures ? `\n${failures} failing` : '\nall passed');
 process.exit(failures ? 1 : 0);

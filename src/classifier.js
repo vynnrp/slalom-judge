@@ -110,6 +110,14 @@ export class TrickRecognizer {
   // Returns { frameMatch, current, event } where event is a newly logged trick (or null).
   update(t, feats) {
     const s = this.config.settings;
+    // A gap with no skater (lost pose) ends the current trick.
+    const lastT = this.window.length ? this.window[this.window.length - 1].t : null;
+    let gapEvent = null;
+    if (lastT != null && t - lastT > s.windowMs) {
+      gapEvent = this._close(lastT);
+      this.current = null;
+      this.window = [];
+    }
     const m = matchFrame(feats, this.config, this.byId);
     const counters = feats.counters || {};
     this.window.push({ t, key: keyOf(m), match: m, counters });
@@ -119,7 +127,8 @@ export class TrickRecognizer {
     for (const w of this.window) counts.set(w.key, (counts.get(w.key) || 0) + 1);
     let topKey = 'none', topN = 0;
     for (const [k, n] of counts) if (n > topN) { topKey = k; topN = n; }
-    const stable = topN / this.window.length >= s.matchRatio ? topKey : null;
+    // Need a few frames before deciding (a single frame after the skater appears is often wrong).
+    const stable = this.window.length >= 4 && topN / this.window.length >= s.matchRatio ? topKey : null;
 
     let event = null;
     if (stable && (!this.current || this.current.key !== stable)) {
@@ -136,7 +145,7 @@ export class TrickRecognizer {
       if (topKey === this.current.key) this.current.lastCounters = counters;
     }
 
-    return { frameMatch: m, current: this.current, event };
+    return { frameMatch: m, current: this.current, event: event || gapEvent };
   }
 
   finish(t) {
