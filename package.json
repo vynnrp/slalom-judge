@@ -1,0 +1,11 @@
+{
+  "name": "slalom-judge",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "description": "Inline freestyle slalom trick recognition from video (prototype)",
+  "scripts": {
+    "start": "python3 -m http.server 8000",
+    "test": "node test/synthetic.test.mjs"
+  }
+}

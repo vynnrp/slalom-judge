@@ -1,0 +1,14 @@
+{
+  "name": "Slalom Judge",
+  "short_name": "Slalom Judge",
+  "description": "Live inline freestyle slalom trick recognition (World Skate 2026 matrix)",
+  "start_url": "./index.html",
+  "scope": "./",
+  "display": "standalone",
+  "background_color": "#0f1214",
+  "theme_color": "#0f1214",
+  "icons": [
+    { "src": "icons/icon-192.png", "sizes": "192x192", "type": "image/png" },
+    { "src": "icons/icon-512.png", "sizes": "512x512", "type": "image/png", "purpose": "any maskable" }
+  ]
+}

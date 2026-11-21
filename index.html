@@ -1,0 +1,91 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Slalom Judge</title>
+  <link rel="stylesheet" href="src/styles.css">
+  <link rel="manifest" href="manifest.webmanifest">
+  <link rel="icon" href="icons/icon-192.png">
+  <link rel="apple-touch-icon" href="icons/icon-192.png">
+  <meta name="theme-color" content="#0f1214">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+</head>
+<body>
+  <header>
+    <h1>Slalom Judge <span class="tag">prototype · trick recognition</span></h1>
+    <div class="sources">
+      <button id="btnCamera">Use camera</button>
+      <label class="button">Open video…<input id="fileInput" type="file" accept="video/*" hidden></label>
+      <button id="btnPause" disabled>Pause</button>
+      <select id="rate" title="Playback speed">
+        <option value="0.25">0.25×</option><option value="0.5">0.5×</option><option value="1" selected>1×</option>
+      </select>
+      <button id="btnResetRun">Reset run</button>
+    </div>
+  </header>
+
+  <main>
+    <section class="stage">
+      <div class="videoWrap">
+        <video id="video" playsinline muted></video>
+        <canvas id="overlay"></canvas>
+        <div id="status" class="status">Loading pose model…</div>
+      </div>
+      <div class="now">
+        <div class="nowLabel" id="nowLabel">—</div>
+        <div class="nowMeta"><span id="nowFamily"></span><span id="nowLevel"></span><span id="nowPoints"></span><span id="nowTime"></span><span id="nowCount"></span></div>
+        <div class="frameLabel">This frame: <span id="frameLabel">—</span></div>
+      </div>
+      <div class="runLog">
+        <div class="runHead">
+          <h2>Run log</h2>
+          <div id="runSummary" class="muted"></div>
+        </div>
+        <table><thead><tr><th>Time</th><th>Trick</th><th>Level</th><th>Pts</th><th>Status</th></tr></thead><tbody id="logBody"></tbody></table>
+      </div>
+    </section>
+
+    <section class="config">
+      <div class="tabs">
+        <button class="tab active" data-tab="trick">Trick alignment</button>
+        <button class="tab" data-tab="features">Live body features</button>
+        <button class="tab" data-tab="settings">Settings & files</button>
+      </div>
+
+      <div class="tabBody" id="tab-trick">
+        <div class="row">
+          <input id="trickSearch" placeholder="Search tricks…">
+          <label class="check"><input type="checkbox" id="onlyConfigured"> only tricks with rules</label>
+          <button id="btnNewTrick">+ New trick</button>
+        </div>
+        <div class="split">
+          <ul id="trickList" class="trickList"></ul>
+          <div id="trickEditor" class="trickEditor"><p class="muted">Pick a trick to edit its body alignment rules.</p></div>
+        </div>
+      </div>
+
+      <div class="tabBody hidden" id="tab-features">
+        <p class="muted">Values update live. When a trick is selected, its rules are marked ✓ / ✗ here.</p>
+        <table class="feat"><thead><tr><th>Feature</th><th>Value</th><th>Rule</th></tr></thead><tbody id="featBody"></tbody></table>
+      </div>
+
+      <div class="tabBody hidden" id="tab-settings">
+        <div id="settingsForm" class="settingsForm"></div>
+        <h3>Family detectors</h3>
+        <p class="muted">Used when no specific trick matches, so the screen still shows the family.</p>
+        <div id="familyEditor"></div>
+        <h3>Configuration file</h3>
+        <div class="row">
+          <button id="btnExport">Export JSON</button>
+          <label class="button">Import JSON<input id="importInput" type="file" accept="application/json" hidden></label>
+          <button id="btnResetCfg" class="danger">Reset to defaults</button>
+        </div>
+        <p class="muted">Changes save automatically in this browser.</p>
+      </div>
+    </section>
+  </main>
+
+  <script type="module" src="src/app.js"></script>
+</body>
+</html>

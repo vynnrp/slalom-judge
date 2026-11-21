@@ -1,0 +1,33 @@
+<!doctype html>
+<meta charset="utf-8">
+<title>Pose dump</title>
+<p>Dev tool: runs the pose model over every frame of a video and stores landmarks in window.dump.</p>
+<input type="file" id="f" accept="video/*">
+<video id="v" muted playsinline style="max-width:480px"></video>
+<script type="module">
+import { FilesetResolver, PoseLandmarker } from '../vendor/tasks-vision/vision_bundle.mjs';
+import { detectCones, DEFAULT_CONE_COLOR } from '../src/cones.js';
+const cv = document.createElement('canvas'); const cx = cv.getContext('2d', { willReadFrequently: true });
+const v = document.getElementById('v');
+const vision = await FilesetResolver.forVisionTasks(new URL('../vendor/tasks-vision/wasm', import.meta.url).href);
+const lm = await PoseLandmarker.createFromOptions(vision, {
+  baseOptions: { modelAssetPath: new URL('../models/pose_landmarker_full.task', import.meta.url).href, delegate: 'CPU' },
+  runningMode: 'VIDEO', numPoses: 1,
+});
+window.ready = true;
+window.runDump = async (fps = 30) => {
+  await new Promise((r) => (v.readyState >= 2 ? r() : (v.onloadeddata = r)));
+  const out = []; const n = Math.floor(v.duration * fps);
+  for (let i = 0; i < n; i++) {
+    v.currentTime = i / fps;
+    await new Promise((r) => (v.onseeked = r));
+    const res = lm.detectForVideo(v, i * (1000 / fps) + 1);
+    const aw = DEFAULT_CONE_COLOR.analysisWidth; cv.width = aw; cv.height = Math.round(aw * v.videoHeight / v.videoWidth);
+    cx.drawImage(v, 0, 0, cv.width, cv.height);
+    const cones = detectCones(cx.getImageData(0, 0, cv.width, cv.height).data, cv.width, cv.height);
+    out.push({ cones, t: i * (1000 / fps), w: v.videoWidth, h: v.videoHeight, image: res.landmarks?.[0] ?? null, world: res.worldLandmarks?.[0] ?? null });
+  }
+  return out;
+};
+document.getElementById('f').onchange = (e) => { v.src = URL.createObjectURL(e.target.files[0]); };
+</script>
