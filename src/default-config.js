@@ -23,7 +23,7 @@ const airborne = [{ f: 'air_gap', min: 0.06 }];
 const crossed = [{ f: 'ankle_order', max: -0.1 }];
 
 export const DEFAULT_CONFIG = {
-  version: 1,
+  version: 2, // bump when default levels/rules change, so saved configs pick them up
   settings: {
     minVisibility: 0.5, // ignore frames where key landmarks are less visible than this
     windowMs: 400, // sliding window for smoothing
@@ -37,7 +37,8 @@ export const DEFAULT_CONFIG = {
   },
   // Tricks that are not in the matrix. Level is placed by technical similarity (matrix footnote).
   customTricks: [
-    { id: 'spinning.toe-reverse-spin', name: 'Toe Reverse Spin', family: 'spinning', level: 'C', sub: 3 },
+    // Level A from Chawis (2026-11-21). Sub-level 1 (51 pts) is a GUESS: the lowest A until confirmed.
+    { id: 'spinning.toe-reverse-spin', name: 'Toe Reverse Spin', family: 'spinning', level: 'A', sub: 1 },
     // GUESS: one level above Teapot (B4), like Toe Footgun (B2) is one level above Footgun (C2).
     { id: 'sitting.toe-teapot', name: 'Toe Teapot', family: 'sitting', level: 'A', sub: 4 },
   ],
@@ -79,7 +80,7 @@ export const DEFAULT_CONFIG = {
     'spinning.toe-reverse-spin': {
       rules: [...spin, ...onToe, { f: 'sit_depth', min: 0.5 }, { f: 'spin_dir', min: 1 }],
       count: 'toe_cones', minCount: 3,
-      note: 'Rule from Chawis (2026-11-21): count only while on the toe, and only when passing the middle of a cone. Level C3 is a GUESS (same as Two Wheels Spin). spin_dir +1 taken from the sample clip (right foot).',
+      note: 'Rule from Chawis (2026-11-21): count only while on the toe, and only when passing the middle of a cone. Level A from Chawis; sub-level A1 is a GUESS. spin_dir +1 taken from the sample clip (right foot).',
     },
     // ---- Combo clip from Chawis (2026-11-21): Butterfly -> Toe Special (TT Special) -> Toe Teapot ----
     'sitting.toe-teapot': {

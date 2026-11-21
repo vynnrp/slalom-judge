@@ -77,8 +77,8 @@ Added from Chawis's clip and rule (2026-11-21): **count only while on the toe, a
   with a minimum. Toe Reverse Spin uses **cones passed on the toe, minimum 3**.
 * On the clip: 5 cone centres passed, the first with the skate still flat (entry), so **4 count** (3 in some browser
   runs, depending on which frames are sampled). About 3.4 turns, 3.1 of them on the toe.
-* Toe Reverse Spin is not in the matrix, so it is a **custom trick** at level **C3 (33 pts) as a guess**, the same as
-  Two Wheels Spin. Change it in the trick editor. "+ New trick" adds other tricks that are not in the matrix.
+* Toe Reverse Spin is not in the matrix, so it is a **custom trick**. Chawis ranked it **level A**; the sub-level is set to
+  **A1 (51 pts) as a guess** until confirmed. Change it in the trick editor. "+ New trick" adds other tricks that are not in the matrix.
 * "Reverse" is read as `spin_dir = +1` (turning towards the supporting-foot side), taken from the clip. GUESS.
 
 ## Combo clip: Butterfly, Toe Special, Toe Teapot

@@ -24,6 +24,14 @@ function mergeCustom(defs, mine) {
 }
 function mergeDefaults(c) {
   const d = structuredClone(DEFAULT_CONFIG);
+  if ((c.version ?? 1) < d.version && c.customTricks) {
+    // Newer defaults: refresh the levels of the built-in custom tricks, keep everything else the person tuned.
+    for (const ct of c.customTricks) {
+      const def = d.customTricks.find((x) => x.id === ct.id);
+      if (def) Object.assign(ct, { level: def.level, sub: def.sub });
+    }
+    c.version = d.version;
+  }
   return { ...d, ...c, settings: { ...d.settings, ...(c.settings || {}) }, families: { ...d.families, ...(c.families || {}) }, tricks: { ...d.tricks, ...(c.tricks || {}) }, customTricks: mergeCustom(d.customTricks, c.customTricks) };
 }
 let config = loadConfig();

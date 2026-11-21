@@ -1,5 +1,5 @@
 // Offline cache: after the first visit the app (pose model included) works without internet.
-const VERSION = 'slalom-judge-v3';
+const VERSION = 'slalom-judge-v4';
 const FILES = [
   './', './index.html', './manifest.webmanifest',
   './src/app.js', './src/styles.css', './src/features.js', './src/classifier.js', './src/cones.js',
